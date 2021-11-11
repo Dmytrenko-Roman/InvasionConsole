@@ -12,8 +12,9 @@ def draw(field, sx, sy, mx, my):
 		for x, elem in enumerate(arr):
 			if x == sx and y == sy:
 				elem = '^'
-			if x == mx and y == my:
-				elem = '×' 
+			if missileX != None and missileY != None:
+				if x == mx and y == my:
+					elem = '×' 
 			temp += str(elem)
 		result += temp + '\n'
 
@@ -42,8 +43,8 @@ WIDTH = len(field[0]) - 2
 HEIGHT = len(field) - 2
 shipX = WIDTH / 2
 shipY = HEIGHT
-missileX = shipX
-missileY = shipY - 1
+missileX = None
+missileY = None
 MISSILE_DIR_Y = 1
 DIFFICULTY = 0.1
 BORDERS = [1, WIDTH]
@@ -51,13 +52,16 @@ winCondition = [0, 1, 2, 4, 5, 6, 7]
 
 
 def press_instruction(key):
-	global shipX, BORDERS
+	global shipX, shipY, missileX, missileY, BORDERS
 	if key == keyboard.KeyCode.from_char('a'):
 		if shipX > BORDERS[0]:
 			shipX -= 1
 	elif key == keyboard.KeyCode.from_char('d'):
 		if shipX < BORDERS[1]:
 			shipX += 1
+	elif key == keyboard.KeyCode.from_char('q'):
+		missileX = shipX
+		missileY = shipY - 1
 
 
 def release_instruction(key):
@@ -72,19 +76,21 @@ keyboard.Listener(
 
 while True:
 
-	missileY -= MISSILE_DIR_Y
-	y = round(missileY)
-	x = round(missileX)
+	if missileX != None and missileY != None:
+		missileY -= MISSILE_DIR_Y
+		y = round(missileY)
+		x = round(missileX)
+
+		if field[y][x] == '■':
+			field[y][x] = ' '
+			missileY = None
+			missileX = None
+		elif field[y][x] == '═':
+			missileY = None
+			missileX = None
+	
 	isOver = True
 
-	if field[y][x] == '■':
-		field[y][x] = ' '
-		missileY = shipY - 1
-		missileX = shipX
-	elif field[y][x] == '═':
-		missileY = shipY - 1
-		missileX = shipX
-	
 	for elem in winCondition:
 		for arr in field[elem]:
 			if '■' in arr:
