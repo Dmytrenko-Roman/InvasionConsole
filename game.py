@@ -87,8 +87,8 @@ while True:
 	
 	for elem in winCondition:
 		for arr in field[elem]:
-				if '■' in arr:
-					isOver = False 
+			if '■' in arr:
+				isOver = False 
 
 	if isOver:
 		print('You win!')
