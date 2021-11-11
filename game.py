@@ -1,75 +1,63 @@
 from pynput import keyboard
 import time
 import os
-import numpy as np
+
 
 def draw(field, sx, sy, mx, my):
+
 	result = ''
 
 	for y, arr in enumerate(field):
 		temp = ''
 		for x, elem in enumerate(arr):
 			if x == sx and y == sy:
-				elem = 'o'
+				elem = '^'
 			if x == mx and y == my:
-				elem = '|' 
+				elem = '×' 
 			temp += str(elem)
 		result += temp + '\n'
 
 	return result
 
 
-WIDTH = 8
-HEIGHT = 10
+field = [
+	['╔', '═', '═', '═', '═', '═', '═', '═', '═', '═', '═', '═', '═', '═', '═', '═', '═', '╗'], 
+	['║', '■', '■', '■', ' ', ' ', ' ', '■', '■', '■', '■', ' ', ' ', ' ', '■', '■', '■', '║'], 
+	['║', '■', '■', '■', '■', '■', '■', '■', '■', '■', '■', '■', '■', '■', '■', '■', '■', '║'], 
+	['║', ' ', ' ', ' ', '■', '■', '■', '■', '■', '■', '■', '■', '■', '■', ' ', ' ', ' ', '║'], 
+	['║', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '║'], 
+	['║', ' ', ' ', ' ', ' ', ' ', ' ', '■', '■', '■', '■', ' ', ' ', ' ', ' ', ' ', ' ', '║'],
+	['║', ' ', ' ', '■', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '■', ' ', ' ', '║'], 
+	['║', ' ', ' ', '■', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '■', ' ', ' ', '║'], 
+	['║', ' ', ' ', '■', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '■', ' ', ' ', '║'], 
+	['║', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '║'], 
+	['║', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '║'],
+	['║', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '║'], 
+	['║', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '║'],  
+	['╚', '═', '═', '═', '═', '═', '═', '═', '═', '═', '═', '═', '═', '═', '═', '═', '═', '╝']
+]
+
+
+WIDTH = len(field[0]) - 2
+HEIGHT = len(field) - 2
 shipX = WIDTH / 2
 shipY = HEIGHT
 missileX = shipX
-missileY = shipY
+missileY = shipY - 1
 MISSILE_DIR_Y = 1
-DIFFICULTY = 0.4
-ENEMIES_HEIGHT = [1, 4]
-ENEMIES_WIDTH = [1, WIDTH]
-
-
-top = ['╔', '╗']
-bot = ['╚', '╝']
-middle = ['║', '║']
-field = []
-
-
-for _ in range(WIDTH):
-	top.insert(1, '═')
-	bot.insert(1, '═')
-	middle.insert(1, ' ')
-	
-for _ in range(HEIGHT):
-	field.append(middle)
-
-field.append(bot)
-field.insert(0, top)
-
-arr1 = [
-	['╔', '═', '═', '═', '═', '═', '═', '═', '═', '╗'], 
-	['║', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '║'], 
-	['║', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '║'], 
-	['║', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '║'], 
-	['║', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '║'], 
-	['║', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '║'],
-	['║', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '║'], 
-	['║', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '║'], 
-	['║', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '║'], 
-	['║', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '║'], 
-	['║', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '║'],  
-	['╚', '═', '═', '═', '═', '═', '═', '═', '═', '╝']
-]
-
-for y in range(ENEMIES_HEIGHT[0], ENEMIES_HEIGHT[1]):
-	for x in range(ENEMIES_WIDTH[0], ENEMIES_WIDTH[1] + 1):
-		arr1[y][x] = '-'
+DIFFICULTY = 0.1
+BORDERS = [1, WIDTH]
+winCondition = [0, 1, 2, 4, 5, 6, 7]
 
 
 def press_instruction(key):
-	pass
+	global shipX, BORDERS
+	if key == keyboard.KeyCode.from_char('a'):
+		if shipX > BORDERS[0]:
+			shipX -= 1
+	elif key == keyboard.KeyCode.from_char('d'):
+		if shipX < BORDERS[1]:
+			shipX += 1
 
 
 def release_instruction(key):
@@ -83,14 +71,29 @@ keyboard.Listener(
 
 
 while True:
+
 	missileY -= MISSILE_DIR_Y
 	y = round(missileY)
 	x = round(missileX)
-	if arr1[y][x] == '-' or arr1[y][x] == '═':
-		arr1[y][x] = ' '
-		missileY = shipY
+	isOver = True
+
+	if field[y][x] == '■':
+		field[y][x] = ' '
+		missileY = shipY - 1
+		missileX = shipX
+	elif field[y][x] == '═':
+		missileY = shipY - 1
 		missileX = shipX
 	
+	for elem in winCondition:
+		for arr in field[elem]:
+				if '■' in arr:
+					isOver = False 
+
+	if isOver:
+		print('You win!')
+		break
+
 	os.system('cls')
-	print(draw(arr1, shipX, shipY, missileX, missileY))
+	print(draw(field, shipX, shipY, missileX, missileY))
 	time.sleep(DIFFICULTY)
