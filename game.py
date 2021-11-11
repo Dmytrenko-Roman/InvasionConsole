@@ -82,9 +82,9 @@ while True:
 
 			if field[y][x] == '■':
 				field[y][x] = ' '
-				missiles.pop(0)
+				missiles.remove([x, y])
 			elif field[y][x] == '═':
-				missiles.pop(0)
+				missiles.remove([x, y])
 	
 	isOver = True
 
